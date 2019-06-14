@@ -1,0 +1,30 @@
+<head>
+<script src="//code.jquery.com/jquery-3.1.0.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script>
+function load() {
+	$.get( { url : '/node/getTests', 
+		success : function(response) {
+			console.log(response[0].time)
+			$("#tests").html(response.filter(x=>!x.annotated).map(x=>`<a href="annotate.html?key=${x.key}">${x.name ? x.name : `unnamed test created at ${(new Date(Number(x.time))).toLocaleDateString()} ${(new Date(Number(x.time))).toLocaleTimeString()}`}</a>`).join("<br>"))	
+			$("#Atests").html(response.filter(x=>x.annotated).map(x=>`<a href="report.html?key=${x.key}">${x.name ? x.name : `unnamed test created at ${(new Date(Number(x.time))).toLocaleDateString()} ${(new Date(Number(x.time))).toLocaleTimeString()}`}</a>`).join("<br>"))	
+		}
+	} )
+}
+</script>
+</head>
+<body onload="load()">
+<div class="card col-6">
+<a class="btn btn-primary" style="font-size:36;font-weight:bold" href="collect.html">New Test</a><br><br>
+<h2>Unannotated Tests:</h2>
+<div id="tests">
+</div>
+<script>
+</script>
+<br>
+<h2>Annotated Tests:</h2>
+<div id="Atests">
+</div>
+</div>
+</body>
+

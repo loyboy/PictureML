@@ -1,0 +1,80 @@
+<html>
+<head>
+<script>
+function load() {
+	$.get( { url : '/node/users', 
+		success : function(response) {
+			$("#owner").html( response.map(x=>`<option value="${x}">${x}</option>`).join('') )
+		}
+	} )
+}
+</script>
+</head>
+<script src="//code.jquery.com/jquery-3.1.0.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+<body onload="load()">
+<div id="app">
+  <form>
+Sample Collection Name:<input type="text" id="name" placeholder="Name this Test" required>
+<br>Technician<select id="owner" ref="owner" name="owner" placeholder="Technician"></select><br>
+Room Name:<input type="text" id="room" ref="my_input" required>
+<br>Slide ID:<input type="text" ref="slide_id" required>
+   <br> <button @click.prevent="getFormValues()">Add Room</button>
+
+  </form>
+</div>
+
+<table id="data">
+<tr><th>Slide</th><th>Room</th><th>ID</th></tr>
+</table>
+  <form action="/node/newTest" method="post" id="submit">
+   <input type="submit" value="Create Test">
+  </form>
+<a href="./selectSamples.html">Cancel</a>
+<script>
+
+function render() {
+      $("#data").html('<tr><th>Slide</th><th>Room</th><th>ID</th></tr>' + listItems.map(function(x) { return `<tr><td>${x.id}</td><td>${x.name}</td><td>${x.slide}</td><td><a style="color:red" onclick='remove("${x.id}")'>Remove</a></tr>` }).join('') )
+}
+function remove(id) {
+	listItems = listItems.filter(function(x) { return Number(id) != Number(x.id) })
+	render()
+}
+var listItems = []
+var id = 0;
+new Vue({
+  el: '#app',
+  data: {
+    output: ''
+  },
+  methods: {
+    getFormValues () {
+	id++
+	listItems.push( { name : this.$refs.my_input.value , id : id , slide : this.$refs.slide_id.value })
+	console.log(listItems)
+	this.$refs.my_input.value = ""
+	this.$refs.slide_id.value = ""
+	$("#room").focus()
+	render()
+    }
+  }
+})
+
+$("#submit").submit(function(e){
+    var form = $(this);
+    $.ajax({ 
+         url   : form.attr('action'),
+         type  : form.attr('method'),
+         data  : { name : $("#name").val() , list : listItems , owner : $("#owner").val()} , // data to be submitted
+         success: function(response){
+            window.location.href="/cameron/selectSamples.html" // do what you like with the response
+         }
+    });
+    return false;
+ });
+
+</script>
+
+</body>
+</html>
+

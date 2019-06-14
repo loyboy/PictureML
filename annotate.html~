@@ -1,0 +1,156 @@
+<head>
+<style>
+div.c { 
+	margin:30px
+}
+.circle {
+  position: absolute;
+  background: rgba(255, 0, 0, 0.2) url("https://i.imgur.com/qtpC8Rf.png") no-repeat 50% 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%); /* use translate instead of JS calculations */
+}
+
+.radius {
+  position: absolute;
+}
+</style>
+
+
+<script src="//code.jquery.com/jquery-3.1.0.js"></script>
+<script>
+var getUrlParameter = function getUrlParameter(sParam) {
+    var sPageURL = window.location.search.substring(1),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+        }
+    }
+}
+var key
+function renderimages(response) {
+
+	for (var i in response.photos) {
+		var url = "/" + response.photos[i].path.replace('/var/www/html/','');
+		var k = Number(i) + 1
+		$(`#image${k}`).attr("src", url)
+		console.log(`#image${k}`,url)
+	}
+}
+function load() {
+	key = getUrlParameter("key")
+	$.get({ url : `/node/getTest?key=${key}`, success: renderimages })
+}
+var App = App || {};
+App.points = []; // Use array to store objects like [{x,y,r}, {x,y,r} ...]
+
+
+$(function($) {
+
+  const radius =20
+   function clickEvent (ev) {
+
+    const $this = $(this),
+       r = parseInt(radius, 10), // Parse as Integer radix 10
+
+      o = $this.offset(),
+      y = ev.pageY - o.top,
+      x = ev.pageX - o.left;
+      id = String(Math.random()).replace('.','');
+	var slide = $this.attr("id").replace('image_preview','')
+    $("<div />", {
+      "class": "circle",
+	css: {
+		top: ev.pageY,
+		left: ev.pageX,
+		width: r * 2,
+		height: r * 2,
+		"z-index": 12,
+	},
+	id : id,
+	click : function(e) {
+		this.remove();
+		e.stopPropagation();
+		App.points.splice(App.points.map(x=>x.id).indexOf(($(this).attr("id"))),1)
+	},
+      appendTo: $this // append to #image_preview!
+    });
+
+    // Append data to App.points
+    App.points.push({slide, x,y,r,id});
+    // Test
+    console.log( App.points )
+
+  }
+  var i = 1;
+  while (i < 13) {
+	  	$(`#image_preview${i}`).on('click', clickEvent );
+		i = i + 1
+	}
+});
+</script>
+
+</head>
+<body onload="load()">
+<div class="card" style="margin-left:50px;margin-right:50px">
+<div class="c" id="image_preview1">
+  <img id="image1" alt="graph">
+</div>
+<div class="c" id="image_preview2">
+  <img id="image2" alt="graph">
+</div>
+<div class="c" id="image_preview3">
+  <img id="image3" alt="graph">
+</div>
+<div class="c" id="image_preview4">
+  <img  id="image4" alt="graph">
+</div>
+<div class="c" id="image_preview5">
+  <img  id="image5" alt="graph">
+</div>
+<div class="c" id="image_preview6">
+  <img id="image6"  alt="graph">
+</div>
+<div class="c" id="image_preview7">
+  <img id="image7"  alt="graph">
+</div>
+<div class="c" id="image_preview8">
+  <img  id="image8" alt="graph">
+</div>
+<div class="c" id="image_preview9">
+  <img  id="image9" alt="graph">
+</div>
+<div class="c" id="image_preview10">
+  <img  id="image10" alt="graph">
+</div>
+<div class="c" id="image_preview11">
+  <img id="image11" alt="graph">
+</div>
+<div class="c" id="image_preview12">
+  <img  id="image12" alt="graph">
+</div>
+</div>
+<form action="/node/postAnnotations" method="post">
+<input class="btn btn-primary" style="margin-top:20px;width:100%;height:100px;font-size:32;font-weight:bold" type="submit" value="Submit Test">
+</form>
+<script>
+$("form").submit(function(e){
+    e.preventDefault()
+    var form = $(this);
+    $.ajax({ 
+         url   : form.attr('action'),
+         type  : form.attr('method'),
+         data  : { key: key, points : App.points },
+         success: function(response){
+           window.location.replace("select.html") // do what you like with the response
+         }
+    });
+    return false;
+ });
+</script>
+</body>

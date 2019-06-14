@@ -1,0 +1,96 @@
+<head>
+<script src="//code.jquery.com/jquery-3.1.0.js"></script>
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+<script>
+// Builds the HTML Table out of myList.
+
+
+function getUrlParameter(sParam) {
+    var sPageURL = window.location.search.substring(1),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+        }
+    }
+}
+function renderReport(response) {
+	var i = 0;
+	var slides = response.count;
+	var table = "<tr><th>Slide</th><th>Count</th></tr>" + Object.keys(slides).map(k=>{ return `<tr><td>${k}</td><td>${slides[k]}</td></tr>` }).join('')
+	console.log(Object.keys(slides))
+	$('#dataTable').html(table)
+	var myLine = new 
+	   Chart(document.getElementById("canvas").getContext("2d"),
+	     {
+		data: {
+			labels : ["C1","C2","E1","E2","E3","E4","E5","E6","E7","E8","E9","E10"],
+			datasets : [
+				{
+       					lineTension: 0,
+					borderColor: "#3e95cd",
+       					fill: false,
+					data : Object.keys(slides).map(x=>slides[x]),
+					bezierCurve : false
+				}
+			]
+			
+		},
+		type:"line",
+		options:{
+			  bezierCurve : false,
+			  animation: {
+			    onComplete: function (){
+				  var url=myLine.toBase64Image();
+				  document.getElementById("url").src=url;
+				}
+			  }
+			}
+	      }
+	    );
+}
+function load() {
+	key = getUrlParameter("key")
+	$.get({ url : `/node/getReport?key=${key}`, success: renderReport })
+
+
+}
+</script>
+</head>
+<body onload="load()">
+<div id="content" class="card col-6-m">
+<table id="dataTable" class="table table-striped" ></table>
+
+</div>
+<div id="editor"></div>
+
+
+<canvas id="canvas" height="450" width="600" style="display:none"></canvas>
+
+<img id="url" height="450" width="600"/>
+
+<button id="cmd">Generate PDF</button>
+
+<script>
+
+    $('#cmd').click(function () {
+	  var pdf = new jsPDF('p', 'pt', 'letter');
+	  pdf.canvas.height = 80 * 11;
+	  pdf.canvas.width = 80 * 8.5;    
+	//  console.log($("#content").html())
+	  var resp = pdf.fromHTML($("#content").html())
+	  pdf.addImage($("#url").attr("src"),resp.x,resp.y,450,600);
+	  pdf.save('test.pdf');
+    });
+
+    // This code is collected but useful, click below to jsfiddle link.
+</script>
+</body>

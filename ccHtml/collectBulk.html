@@ -1,0 +1,60 @@
+<head>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<style>
+file { 
+	display:none
+}
+</style>
+<script>
+var key 
+
+function getUrlParameter(sParam) {
+    var sPageURL = window.location.search.substring(1),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+        }
+    }
+}
+
+function load() {
+	key = getUrlParameter("key")
+	console.log(key)
+	$("#key").val(key)
+}
+
+function readURL(input) {
+
+  if (input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(event) {
+	console.log(event.parent)
+	$(`#previewFor${input.id}`).attr('src', event.target.result);
+	$(`#previewFor${input.id}`).attr('alt',"No Image Found For Slide" + String(input.id))
+    }
+
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+
+</script>
+</head>
+<body onload="load()">
+<label></label>
+<div class="card" style="margin-left:50px; margin-right:50px">
+<form method="post" action="/node/upload" enctype="multipart/form-data">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<input class="file" type='file' id="file1" accept="image/*" name="photos" capture="camera" multiple/><br>
+<input type="hidden" id="key" value="" name="key">
+<input class="btn btn-primary" style="margin-top:20px;width:100%;height:100px;font-size:32;font-weight:bold" type="submit" value="Submit Test">
+</form>
+</div>
+</body>
+

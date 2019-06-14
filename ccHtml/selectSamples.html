@@ -1,0 +1,30 @@
+<head>
+<script src="//code.jquery.com/jquery-3.1.0.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script>
+function load() {
+	$.get( { url : '/node/getSamples', 
+		success : function(response) {
+			response = response.filter(x=>x.rooms)
+			$("#tests").html(response.filter(x=>x.rooms.filter( y=>!y.annotated ).length > 0).map(x=>`${x.owner ? x.owner : "Undefined User: "} ${x.name ? x.name : `unnamed test created at ${(new Date(Number(x.time))).toLocaleDateString()} ${(new Date(Number(x.time))).toLocaleTimeString()}`}: <a class="btn btn-succses" href="select.html?key=${x.key}">Annotate</a>`).join("<br>"))	
+			$("#Atests").html(response.filter(x=>x.rooms.filter( y=>!y.annotated ).length == 0).map(x=>`${x.owner ? x.owner : "Undefined User: "} ${x.name ? x.name : `unnamed test created at ${(new Date(Number(x.time))).toLocaleDateString()} ${(new Date(Number(x.time))).toLocaleTimeString()}`}: <a class="btn btn-success" href="report.html?key=${x.key}">View Report</a> <a class="btn btn-succses" href="select.html?key=${x.key}">View Annotations</a>   <a class="btn btn-primary" href="/node/getSamplePhotos?key=${x.key}">Download Photos</a>`).join("<br>"))	
+		}
+	} )
+}
+</script>
+</head>
+<body onload="load()">
+<div class="card col-6">
+<h2>Unannotated Tests:</h2>
+<div id="tests">
+</div>
+<script>
+</script>
+<br>
+<h2>Annotated Tests:</h2>
+<div id="Atests">
+</div>
+</div>
+<a class="btn btn-warning" href="./addATest.html">Add a Test</a>
+</body>
+

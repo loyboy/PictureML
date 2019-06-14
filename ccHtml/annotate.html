@@ -1,0 +1,227 @@
+<head>
+<style>
+div.c { 
+	margin:30px
+}
+.circle {
+  position: absolute;
+  background: rgba(255, 0, 0, 0.2) url("https://i.imgur.com/qtpC8Rf.png") no-repeat 50% 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%); /* use translate instead of JS calculations */
+}
+
+.radius {
+  position: absolute;
+}
+</style>
+
+
+<script src="//code.jquery.com/jquery-3.1.0.js"></script>
+<script>
+var getUrlParameter = function getUrlParameter(sParam) {
+    var sPageURL = window.location.search.substring(1),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+        }
+    }
+}
+var key
+var points 
+var parent
+function renderimages(response) {
+	var imagesLoaded = 0
+	var totalImages = response.photos.length
+	parent = response.parent
+	for (var i in response.photos) {
+		var url = "/" + response.photos[i].path.replace('/var/www/html/','');
+		var k = Number(i) + 1
+		$(`#image${k}`).attr("src", url)
+		console.log(`#image${k}`,url)
+
+ 		 $(`#image${k}`).on('load', function(event) {
+		    imagesLoaded++;
+		    if (imagesLoaded == totalImages) {
+		      allImagesLoaded();
+		    }
+		  });
+	}
+	for (var j in response.count) {
+		var k = Number(j) + 1
+		console.log(response.count)
+		console.log(`#count${k}`)
+		$(`#count${k}`).val(response.count[j])
+	}
+	function allImagesLoaded() {
+		for (var j in response.points) {
+			var point = response.points[j]
+			var offset = $("#image_preview"+point.slide).offset()
+			const radius = 20
+			var x = Number(offset.left) + Number(point.x)
+			var y = Number(offset.top) + Number(point.y)
+			var r = parseInt(radius, 10)
+			var slide = point.slide
+			console.log(point)
+			console.log(x,y,r)
+			$("<div />", {
+			      "class": "circle",
+				css: {
+					top: y,
+					left: x,
+					width: r * 2,
+					height: r * 2,
+					"z-index": 12,
+				},
+				id : point.id,
+				contextmenu : function(e) {
+					this.remove();
+					e.stopPropagation();
+					App.points.splice(App.points.map(x=>x.id).indexOf(($(this).attr("id"))),1)
+			   		$(`#count${slide}`).val(App.points.filter(x=>x.slide==slide).length)
+				},
+			      appendTo: $("#image_preview"+point.slide) // append to #image_preview!
+			    });
+		}
+	}
+	if (response.points) App.points=response.points
+}
+function load() {
+	key = getUrlParameter("key")
+	$.get({ url : `/node/getTest?key=${key}`, success: renderimages })
+}
+var App = App || {};
+App.points = []; // Use array to store objects like [{x,y,r}, {x,y,r} ...]
+
+
+$(function($) {
+
+  const radius =20
+   function clickEvent (ev) {
+
+    const $this = $(this),
+       r = parseInt(radius, 10), // Parse as Integer radix 10
+
+      o = $this.offset(),
+      y = ev.pageY - o.top,
+      x = ev.pageX - o.left;
+      id = String(Math.random()).replace('.','');
+	var slide = $this.attr("id").replace('image_preview','')
+    $("<div />", {
+      "class": "circle",
+	css: {
+		top: ev.pageY,
+		left: ev.pageX,
+		width: r * 2,
+		height: r * 2,
+		"z-index": 12,
+	},
+	id : id,
+	contextmenu : function(e) {
+		this.remove();
+		e.stopPropagation();
+		App.points.splice(App.points.map(x=>x.id).indexOf(($(this).attr("id"))),1)
+   		$(`#count${slide}`).val(App.points.filter(x=>x.slide==slide).length)
+	},
+      appendTo: $this // append to #image_preview!
+    });
+
+    // Append data to App.points
+    App.points.push({slide, x,y,r,id});
+    $(`#count${slide}`).val(App.points.filter(x=>x.slide==slide).length)
+    // Test
+    console.log( App.points )
+
+  }
+  var i = 1;
+  while (i < 13) {
+	  	$(`#image_preview${i}`).on('click', clickEvent );
+		i = i + 1
+	}
+});
+</script>
+
+</head>
+<body onload="load()">
+<form action="/node/postAnnotations" method="post">
+<div class="card" style="margin-left:50px;margin-right:50px">
+<div class="c" id="image_preview1">
+  <img id="image1" alt="Loading...." style="width:600px">
+</div>
+Count: <input type="text" id="count1" name="count1" placeholder="Count for slide 1">
+<div class="c" id="image_preview2">
+  <img id="image2" alt="Loading...." style="width:600px">
+</div>
+Count: <input type="text" id="count2" name="count2" placeholder="Count for slide 2">
+<div class="c" id="image_preview3">
+  <img id="image3" alt="Loading...." style="width:600px">
+</div>
+Count: <input type="text" id="count3" name="count3" placeholder="Count for slide 3">
+<div class="c" id="image_preview4">
+  <img  id="image4" alt="Loading...." style="width:600px">
+</div>
+Count: <input type="text" id="count4" name="count4" placeholder="Count for slide 4">
+<div class="c" id="image_preview5">
+  <img  id="image5" alt="Loading...." style="width:600px">
+</div>
+Count: <input type="text" id="count5" name="count5" placeholder="Count for slide 5">
+<div class="c" id="image_preview6">
+  <img id="image6"  alt="Loading...." style="width:600px">
+</div>
+Count: <input type="text" id="count6" name="count6" placeholder="Count for slide 6">
+<div class="c" id="image_preview7">
+  <img id="image7"  alt="Loading...." style="width:600px">
+</div>
+Count: <input type="text" id="count7" name="count7" placeholder="Count for slide 7">
+<div class="c" id="image_preview8">
+  <img  id="image8" alt="Loading...." style="width:600px">
+</div>
+Count: <input type="text" id="count8" name="count8" placeholder="Count for slide 8">
+<div class="c" id="image_preview9">
+  <img  id="image9" alt="Loading...." style="width:600px">
+</div>
+Count: <input type="text" id="count9" name="count9" placeholder="Count for slide 9">
+<div class="c" id="image_preview10">
+  <img  id="image10" alt="Loading...." style="width:600px">
+</div>
+Count: <input type="text" id="count10" name="count10" placeholder="Count for slide 10">
+<div class="c" id="image_preview11">
+  <img id="image11" alt="Loading...." style="width:600px">
+</div>
+Count: <input type="text" id="count11" name="count11" placeholder="Count for slide 11">
+<div class="c" id="image_preview12">
+  <img  id="image12" alt="Loading...." style="width:600px">
+</div>
+Count: <input type="text" id="count12" name="count12" placeholder="Count for slide 12">
+</div>
+
+<input class="btn btn-primary" style="margin-top:20px;width:100%;height:100px;font-size:32;font-weight:bold" type="submit" value="Submit Test">
+</form>
+<script>
+$("form").submit(function(e){
+    e.preventDefault()
+    var form = $(this);
+   var  data  = { key: key, points : App.points }
+   var i = 1 
+	while (i < 13) {
+		data["count"+String(i)] = $("#count"+String(i)).val()
+		i = i + 1
+	}
+    $.ajax({ 
+         url   : form.attr('action'),
+         type  : form.attr('method'),
+        data : data,
+         success: function(response){
+	   console.log(key)
+           window.location.replace("select.html?key=" + parent) // do what you like with the response
+         }
+    });
+    return false;
+ });
+</script>
+</body>

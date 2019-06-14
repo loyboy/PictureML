@@ -1,0 +1,52 @@
+<head>
+<script src="//code.jquery.com/jquery-3.1.0.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script>
+
+function getUrlParameter(sParam) {
+    var sPageURL = window.location.search.substring(1),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+        }
+    }
+}
+
+
+function load() {
+	$.get( { url : '/node/getTests?key=' + getUrlParameter("key"), 
+		success : function(response) {
+			console.log(response)
+			$("#UnLoggedtests").html(response.filter(x=>!x.logged).map(x=>`<a href="collect.html?key=${x.key}">${x.parent.name}: ${x.name ? x.name : `unnamed test created at ${(new Date(Number(x.time))).toLocaleDateString()} ${(new Date(Number(x.time))).toLocaleTimeString()}`}</a>`).join("<br>"))	
+			$("#tests").html(response.filter(x=>x.logged && !x.annotated).map(x=>`<a href="annotate.html?key=${x.key}">${x.parent.name}: ${x.name ? x.name : `unnamed test created at ${(new Date(Number(x.time))).toLocaleDateString()} ${(new Date(Number(x.time))).toLocaleTimeString()}`}</a>`).join("<br>"))	
+			$("#Atests").html(response.filter(x=>x.annotated).map(x=>`${x.user ? x.user : "Undefined User: "}<a href="annotate.html?key=${x.key}">${x.parent.name}: ${x.name ? x.name : `unnamed test created at ${(new Date(Number(x.time))).toLocaleDateString()} ${(new Date(Number(x.time))).toLocaleTimeString()}`}</a>`).join("<br>"))	
+		}
+	} )
+}
+</script>
+</head>
+<body onload="load()">
+<div class="card col-6">
+<h2>Unphotographed Samples:</h2>
+<div id="UnLoggedtests">
+</div>
+
+<h2>Unannotated Tests:</h2>
+<div id="tests">
+</div>
+<script>
+</script>
+<br>
+<h2>Annotated Tests:</h2>
+<div id="Atests">
+</div>
+</div>
+<a href="./selectSamples.html">Back to Samples</a>
+</body>
+
